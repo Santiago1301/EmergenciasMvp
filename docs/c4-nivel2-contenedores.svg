@@ -1,0 +1,130 @@
+<svg viewBox="0 0 900 680" xmlns="http://www.w3.org/2000/svg" role="img" style="max-width:900px;width:100%">
+  <title>C4 Nivel 2 — Diagrama de Contenedores</title>
+  <desc>Detalle interno del sistema Emergencias MVP: frontend, API Gateway, 4 microservicios Lambda, EventBridge, Supabase y organismo externo</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .title { font-size: 18px; font-weight: 700; fill: #1a1a1a; }
+    .subtitle { font-size: 11px; fill: #666; }
+    .box-label { font-size: 12px; font-weight: 600; fill: #fff; }
+    .box-tech { font-size: 9px; fill: rgba(255,255,255,0.8); }
+    .box-desc { font-size: 9px; fill: rgba(255,255,255,0.7); }
+    .arrow-label { font-size: 9px; fill: #555; }
+    .legend { font-size: 9px; fill: #888; }
+    .person-label { font-size: 10px; font-weight: 600; fill: #fff; }
+    .person-sub { font-size: 8px; fill: rgba(255,255,255,0.8); }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" class="title">Nivel 2: Diagrama de Contenedores</text>
+  <text x="450" y="44" text-anchor="middle" class="subtitle">Emergencias MVP — Arquitectura interna</text>
+
+  <circle cx="120" cy="90" r="24" fill="#1168bd"/>
+  <text x="120" y="87" text-anchor="middle" class="person-label">Ciudadano</text>
+  <text x="120" y="99" text-anchor="middle" class="person-sub">[Persona]</text>
+
+  <circle cx="780" cy="90" r="24" fill="#1168bd"/>
+  <text x="780" y="87" text-anchor="middle" class="person-label">Operador</text>
+  <text x="780" y="99" text-anchor="middle" class="person-sub">[Persona]</text>
+
+  <rect x="350" y="70" width="200" height="55" rx="5" fill="#438dd5"/>
+  <text x="450" y="92" text-anchor="middle" class="box-label">Frontend PWA</text>
+  <text x="450" y="104" text-anchor="middle" class="box-tech">[React + Vite + Vercel]</text>
+  <text x="450" y="116" text-anchor="middle" class="box-desc">Reportes, seguimiento, dashboard</text>
+
+  <line x1="144" y1="90" x2="348" y2="90" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="240" y="83" class="arrow-label">Usa (HTTPS)</text>
+  <line x1="756" y1="90" x2="552" y2="90" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="650" y="83" class="arrow-label">Usa (HTTPS)</text>
+
+  <rect x="350" y="170" width="200" height="50" rx="5" fill="#438dd5"/>
+  <text x="450" y="191" text-anchor="middle" class="box-label">API Gateway</text>
+  <text x="450" y="203" text-anchor="middle" class="box-tech">[AWS HTTP API Gateway]</text>
+  <text x="450" y="213" text-anchor="middle" class="box-desc">Ruteo, CORS</text>
+
+  <line x1="450" y1="125" x2="450" y2="168" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="465" y="150" class="arrow-label">HTTPS</text>
+
+  <line x1="550" y1="105" x2="810" y2="580" stroke="#666" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="710" y="350" class="arrow-label" transform="rotate(36,710,350)">Auth + Realtime (anon key)</text>
+
+  <rect x="80" y="280" width="170" height="55" rx="5" fill="#438dd5"/>
+  <text x="165" y="301" text-anchor="middle" class="box-label">S1 Intake</text>
+  <text x="165" y="313" text-anchor="middle" class="box-tech">[Lambda · FastAPI + Mangum]</text>
+  <text x="165" y="325" text-anchor="middle" class="box-desc">Valida, prioriza, guarda reportes</text>
+
+  <rect x="280" y="280" width="170" height="55" rx="5" fill="#438dd5"/>
+  <text x="365" y="301" text-anchor="middle" class="box-label">S2 Dispatch</text>
+  <text x="365" y="313" text-anchor="middle" class="box-tech">[Lambda · FastAPI + Mangum]</text>
+  <text x="365" y="325" text-anchor="middle" class="box-desc">Asigna cuadrillas, state machine</text>
+
+  <rect x="480" y="280" width="170" height="55" rx="5" fill="#438dd5"/>
+  <text x="565" y="301" text-anchor="middle" class="box-label">S3 Geospatial</text>
+  <text x="565" y="313" text-anchor="middle" class="box-tech">[Lambda · FastAPI + Mangum]</text>
+  <text x="565" y="325" text-anchor="middle" class="box-desc">Clustering DBSCAN via PostGIS</text>
+
+  <rect x="680" y="280" width="170" height="55" rx="5" fill="#438dd5"/>
+  <text x="765" y="301" text-anchor="middle" class="box-label">S4 Notification</text>
+  <text x="765" y="313" text-anchor="middle" class="box-tech">[Lambda · Python]</text>
+  <text x="765" y="325" text-anchor="middle" class="box-desc">Webhook a organismo externo</text>
+
+  <line x1="400" y1="220" x2="165" y2="278" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="260" y="245" class="arrow-label">/reports</text>
+  <line x1="430" y1="220" x2="365" y2="278" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="380" y="250" class="arrow-label">/dispatch</text>
+  <line x1="480" y1="220" x2="565" y2="278" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="530" y="245" class="arrow-label">/internal</text>
+
+  <rect x="350" y="400" width="200" height="45" rx="5" fill="#d4a843"/>
+  <text x="450" y="420" text-anchor="middle" class="box-label">EventBridge</text>
+  <text x="450" y="433" text-anchor="middle" class="box-tech">[AWS EventBridge]</text>
+
+  <line x1="165" y1="335" x2="370" y2="398" stroke="#666" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="230" y="370" class="arrow-label">report.created</text>
+  <line x1="365" y1="335" x2="420" y2="398" stroke="#666" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="370" y="375" class="arrow-label">dispatch.*</text>
+  <line x1="500" y1="398" x2="565" y2="337" stroke="#666" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="550" y="370" class="arrow-label">trigger</text>
+  <line x1="530" y1="398" x2="750" y2="337" stroke="#666" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="660" y="370" class="arrow-label">trigger</text>
+
+  <rect x="80" y="400" width="170" height="45" rx="5" fill="#999"/>
+  <text x="165" y="420" text-anchor="middle" class="box-label">Secrets Manager</text>
+  <text x="165" y="433" text-anchor="middle" class="box-tech">[AWS Secrets Manager]</text>
+  <line x1="165" y1="398" x2="165" y2="337" stroke="#999" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arr)"/>
+  <text x="100" y="375" class="arrow-label">credenciales</text>
+
+  <rect x="280" y="520" width="340" height="55" rx="5" fill="#999"/>
+  <text x="450" y="542" text-anchor="middle" class="box-label">Supabase</text>
+  <text x="450" y="554" text-anchor="middle" class="box-tech">[PostgreSQL 15 + PostGIS + Auth + RLS + Realtime]</text>
+  <text x="450" y="566" text-anchor="middle" class="box-desc">Base de datos, autenticacion operadores, eventos en tiempo real</text>
+
+  <line x1="165" y1="335" x2="350" y2="518" stroke="#666" stroke-width="1" marker-end="url(#arr)"/>
+  <line x1="365" y1="335" x2="410" y2="518" stroke="#666" stroke-width="1" marker-end="url(#arr)"/>
+  <line x1="565" y1="335" x2="490" y2="518" stroke="#666" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="300" y="490" class="arrow-label">PostgREST / RPC (service_role key)</text>
+
+  <rect x="680" y="520" width="170" height="55" rx="5" fill="#999"/>
+  <text x="765" y="542" text-anchor="middle" class="box-label">Organismo Externo</text>
+  <text x="765" y="554" text-anchor="middle" class="box-tech">[Sistema externo]</text>
+  <text x="765" y="566" text-anchor="middle" class="box-desc">Recibe alertas via webhook</text>
+
+  <line x1="765" y1="335" x2="765" y2="518" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="775" y="430" class="arrow-label">POST webhook</text>
+
+  <circle cx="30" cy="655" r="8" fill="#1168bd"/>
+  <text x="44" y="659" class="legend">Persona</text>
+  <rect x="100" y="647" width="14" height="14" rx="2" fill="#438dd5"/>
+  <text x="120" y="659" class="legend">Contenedor interno</text>
+  <rect x="240" y="647" width="14" height="14" rx="2" fill="#d4a843"/>
+  <text x="260" y="659" class="legend">Bus de eventos</text>
+  <rect x="350" y="647" width="14" height="14" rx="2" fill="#999"/>
+  <text x="370" y="659" class="legend">Sistema externo</text>
+  <line x1="470" y1="654" x2="510" y2="654" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="520" y="659" class="legend">Sincrono</text>
+  <line x1="580" y1="654" x2="620" y2="654" stroke="#666" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="630" y="659" class="legend">Asincrono / config</text>
+</svg>
