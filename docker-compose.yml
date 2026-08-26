@@ -1,0 +1,66 @@
+name: emergencias-mvp
+
+services:
+  s1-intake:
+    build:
+      context: .
+      dockerfile: services/s1-intake/Dockerfile.dev
+    env_file: .env
+    ports:
+      - "8001:8000"
+
+  s2-dispatch:
+    build:
+      context: .
+      dockerfile: services/s2-dispatch/Dockerfile.dev
+    env_file: .env
+    ports:
+      - "8002:8000"
+
+  s3-geospatial:
+    build:
+      context: .
+      dockerfile: services/s3-geospatial/Dockerfile.dev
+    env_file: .env
+    ports:
+      - "8003:8000"
+
+  s4-notification:
+    build:
+      context: .
+      dockerfile: services/s4-notification/Dockerfile.dev
+    env_file: .env
+    environment:
+      - ORGANISMO_WEBHOOK_URL=http://mock-organismo:8000/webhook
+    ports:
+      - "8004:8000"
+    depends_on:
+      - mock-organismo
+
+  mock-organismo:
+    build:
+      context: services/mock-organismo
+    ports:
+      - "8005:8000"
+
+  gateway:
+    image: nginx:alpine
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:8000"
+    depends_on:
+      - s1-intake
+      - s2-dispatch
+
+  frontend:
+    image: node:20-slim
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    env_file: frontend/.env
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    depends_on:
+      - gateway

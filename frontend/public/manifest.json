@@ -1,0 +1,10 @@
+{
+  "name": "Emergencias",
+  "short_name": "Emergencias",
+  "description": "Reporte y despacho de emergencias post-sismo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f6f2",
+  "theme_color": "#e24b4a",
+  "icons": []
+}
