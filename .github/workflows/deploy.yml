@@ -1,0 +1,144 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-2
+  ECR_REGISTRY: 200321260405.dkr.ecr.us-east-2.amazonaws.com
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -e libs/emergencias_common
+          pip install pytest
+
+      - name: Run S1 Intake tests
+        run: cd services/s1-intake && pip install -r requirements.txt && PYTHONPATH=. python -m pytest tests/ -v
+
+      - name: Run S2 Dispatch tests
+        run: cd services/s2-dispatch && pip install -r requirements.txt && PYTHONPATH=. python -m pytest tests/ -v
+
+      - name: Run S3 Geospatial tests
+        run: cd services/s3-geospatial && pip install -r requirements.txt && PYTHONPATH=. python -m pytest tests/ -v
+
+      - name: Run S4 Notification tests
+        run: cd services/s4-notification && pip install -r requirements.txt && PYTHONPATH=. python -m pytest tests/ -v
+
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+  deploy:
+    name: Deploy to AWS
+    needs: [test, build-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push images
+        run: |
+          for svc in s1-intake s2-dispatch s3-geospatial s4-notification; do
+            echo "Building emergencias/$svc..."
+            docker build --platform linux/amd64 \
+              -f services/$svc/Dockerfile \
+              -t $ECR_REGISTRY/emergencias/$svc:latest \
+              -t $ECR_REGISTRY/emergencias/$svc:${{ github.sha }} \
+              .
+            docker push $ECR_REGISTRY/emergencias/$svc --all-tags
+          done
+
+      - name: Update Lambda functions
+        run: |
+          for svc in s1-intake s2-dispatch s3-geospatial s4-notification; do
+            echo "Updating emergencias-$svc..."
+            aws lambda update-function-code \
+              --function-name emergencias-$svc \
+              --image-uri $ECR_REGISTRY/emergencias/$svc:latest \
+              --region $AWS_REGION
+
+            echo "Waiting for update..."
+            aws lambda wait function-updated \
+              --function-name emergencias-$svc \
+              --region $AWS_REGION
+          done
+
+      - name: Canary deploy (publish version + update alias)
+        run: |
+          for svc in s1-intake s2-dispatch s3-geospatial s4-notification; do
+            PREV_VERSION=$(aws lambda get-alias \
+              --function-name emergencias-$svc \
+              --name live \
+              --region $AWS_REGION \
+              --query 'FunctionVersion' --output text)
+
+            NEW_VERSION=$(aws lambda publish-version \
+              --function-name emergencias-$svc \
+              --region $AWS_REGION \
+              --query 'Version' --output text)
+
+            echo "$svc: v$PREV_VERSION -> v$NEW_VERSION (canary 10%)"
+
+            aws lambda update-alias \
+              --function-name emergencias-$svc \
+              --name live \
+              --function-version $NEW_VERSION \
+              --routing-config "AdditionalVersionWeights={\"$PREV_VERSION\"=0.9}" \
+              --region $AWS_REGION
+          done
+
+      - name: Promote canary (100% new version)
+        run: |
+          sleep 30
+          for svc in s1-intake s2-dispatch s3-geospatial s4-notification; do
+            NEW_VERSION=$(aws lambda get-alias \
+              --function-name emergencias-$svc \
+              --name live \
+              --region $AWS_REGION \
+              --query 'FunctionVersion' --output text)
+
+            echo "$svc: promoting v$NEW_VERSION to 100%"
+
+            aws lambda update-alias \
+              --function-name emergencias-$svc \
+              --name live \
+              --function-version $NEW_VERSION \
+              --routing-config "AdditionalVersionWeights={}" \
+              --region $AWS_REGION
+          done
