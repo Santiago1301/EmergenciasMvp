@@ -118,8 +118,8 @@ jobs:
             aws lambda update-alias \
               --function-name emergencias-$svc \
               --name live \
-              --function-version $NEW_VERSION \
-              --routing-config "AdditionalVersionWeights={\"$PREV_VERSION\"=0.9}" \
+              --function-version "$NEW_VERSION" \
+              --routing-config "{\"AdditionalVersionWeights\":{\"$PREV_VERSION\":0.9}}" \
               --region $AWS_REGION
           done
 
@@ -138,7 +138,7 @@ jobs:
             aws lambda update-alias \
               --function-name emergencias-$svc \
               --name live \
-              --function-version $NEW_VERSION \
-              --routing-config "AdditionalVersionWeights={}" \
+              --function-version "$NEW_VERSION" \
+              --routing-config '{"AdditionalVersionWeights":{}}' \
               --region $AWS_REGION
           done
