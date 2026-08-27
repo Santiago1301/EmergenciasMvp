@@ -119,7 +119,7 @@ jobs:
               --function-name emergencias-$svc \
               --name live \
               --function-version "$NEW_VERSION" \
-              --routing-config "{\"AdditionalVersionWeights\":{\"$PREV_VERSION\":0.9}}" \
+              --routing-config AdditionalVersionWeights={"$PREV_VERSION"=0.9} \
               --region $AWS_REGION
           done
 
@@ -139,6 +139,6 @@ jobs:
               --function-name emergencias-$svc \
               --name live \
               --function-version "$NEW_VERSION" \
-              --routing-config '{"AdditionalVersionWeights":{}}' \
+              --routing-config AdditionalVersionWeights={} \
               --region $AWS_REGION
           done
