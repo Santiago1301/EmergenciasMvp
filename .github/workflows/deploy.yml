@@ -115,11 +115,12 @@ jobs:
 
             echo "$svc: v$PREV_VERSION -> v$NEW_VERSION (canary 10%)"
 
+            ROUTING="AdditionalVersionWeights={${PREV_VERSION}=0.9}"
             aws lambda update-alias \
               --function-name emergencias-$svc \
               --name live \
               --function-version "$NEW_VERSION" \
-              --routing-config AdditionalVersionWeights={"$PREV_VERSION"=0.9} \
+              --routing-config "$ROUTING" \
               --region $AWS_REGION
           done
 
@@ -139,6 +140,6 @@ jobs:
               --function-name emergencias-$svc \
               --name live \
               --function-version "$NEW_VERSION" \
-              --routing-config AdditionalVersionWeights={} \
+              --routing-config 'AdditionalVersionWeights={}' \
               --region $AWS_REGION
           done
