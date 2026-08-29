@@ -1,0 +1,145 @@
+<svg viewBox="0 0 960 780" xmlns="http://www.w3.org/2000/svg" role="img" style="max-width:960px;width:100%">
+  <title>C4 Nivel 3 — Diagrama de Componentes (S1 Intake)</title>
+  <desc>Componentes internos del microservicio S1 Intake &amp; Triage: handler, validador, calculador de prioridad, resolutor de zona, repositorio y publicador de eventos</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .title { font-size: 18px; font-weight: 700; fill: #1a1a1a; }
+    .subtitle { font-size: 11px; fill: #666; }
+    .box-label { font-size: 12px; font-weight: 600; fill: #fff; }
+    .box-tech { font-size: 9px; fill: rgba(255,255,255,0.8); }
+    .box-desc { font-size: 9px; fill: rgba(255,255,255,0.7); }
+    .arrow-label { font-size: 9px; fill: #555; }
+    .legend { font-size: 9px; fill: #888; }
+    .container-border { fill: none; stroke: #438dd5; stroke-width: 1.5; stroke-dasharray: 8,4; rx: 8; }
+    .container-label { font-size: 11px; fill: #438dd5; font-weight: 600; }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <text x="480" y="28" text-anchor="middle" class="title">Nivel 3: Diagrama de Componentes</text>
+  <text x="480" y="44" text-anchor="middle" class="subtitle">S1 Intake &amp; Triage Microservice — Arquitectura interna</text>
+
+  <!-- External: API Gateway -->
+  <rect x="380" y="65" width="200" height="45" rx="5" fill="#999"/>
+  <text x="480" y="85" text-anchor="middle" class="box-label">API Gateway</text>
+  <text x="480" y="97" text-anchor="middle" class="box-tech">[AWS HTTP API Gateway]</text>
+
+  <!-- Container boundary -->
+  <rect x="40" y="135" width="880" height="420" class="container-border"/>
+  <text x="60" y="155" class="container-label">S1 Intake &amp; Triage Microservice [Lambda · FastAPI + Mangum]</text>
+
+  <!-- Component 1: Mangum Handler -->
+  <rect x="350" y="170" width="260" height="55" rx="5" fill="#438dd5"/>
+  <text x="480" y="191" text-anchor="middle" class="box-label">Mangum Handler</text>
+  <text x="480" y="203" text-anchor="middle" class="box-tech">[handler.py · Mangum adapter]</text>
+  <text x="480" y="215" text-anchor="middle" class="box-desc">Traduce evento Lambda a ASGI para FastAPI</text>
+
+  <!-- Arrow: Gateway -> Handler -->
+  <line x1="480" y1="110" x2="480" y2="168" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="495" y="142" class="arrow-label">HTTP event (JSON)</text>
+
+  <!-- Component 2: FastAPI Router -->
+  <rect x="350" y="260" width="260" height="55" rx="5" fill="#438dd5"/>
+  <text x="480" y="281" text-anchor="middle" class="box-label">FastAPI Router</text>
+  <text x="480" y="293" text-anchor="middle" class="box-tech">[main.py · POST /reports, GET /reports/:id]</text>
+  <text x="480" y="305" text-anchor="middle" class="box-desc">Define endpoints y orquesta el flujo de recepcion</text>
+
+  <!-- Arrow: Handler -> Router -->
+  <line x1="480" y1="225" x2="480" y2="258" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="495" y="245" class="arrow-label">ASGI request</text>
+
+  <!-- Component 3: Payload Validator -->
+  <rect x="60" y="365" width="200" height="55" rx="5" fill="#2a7ab5"/>
+  <text x="160" y="386" text-anchor="middle" class="box-label">Payload Validator</text>
+  <text x="160" y="398" text-anchor="middle" class="box-tech">[schemas.py · Pydantic BaseModel]</text>
+  <text x="160" y="410" text-anchor="middle" class="box-desc">Valida campos obligatorios e idempotency_key</text>
+
+  <!-- Component 4: Priority Calculator -->
+  <rect x="290" y="365" width="200" height="55" rx="5" fill="#2a7ab5"/>
+  <text x="390" y="386" text-anchor="middle" class="box-label">Priority Calculator</text>
+  <text x="390" y="398" text-anchor="middle" class="box-tech">[priority.py · calcula P1-P4]</text>
+  <text x="390" y="410" text-anchor="middle" class="box-desc">Triage por tipo + palabras clave criticas</text>
+
+  <!-- Component 5: Zone Resolver -->
+  <rect x="520" y="365" width="200" height="55" rx="5" fill="#2a7ab5"/>
+  <text x="620" y="386" text-anchor="middle" class="box-label">Zone Resolver</text>
+  <text x="620" y="398" text-anchor="middle" class="box-tech">[main.py · zone_lookup RPC]</text>
+  <text x="620" y="410" text-anchor="middle" class="box-desc">Asigna zona geografica por coordenadas GPS</text>
+
+  <!-- Component 6: Event Publisher -->
+  <rect x="750" y="365" width="150" height="55" rx="5" fill="#2a7ab5"/>
+  <text x="825" y="386" text-anchor="middle" class="box-label">Event Publisher</text>
+  <text x="825" y="398" text-anchor="middle" class="box-tech">[events.py · publish_event]</text>
+  <text x="825" y="410" text-anchor="middle" class="box-desc">Emite report.created</text>
+
+  <!-- Component 7: Report Repository -->
+  <rect x="290" y="475" width="200" height="55" rx="5" fill="#2a7ab5"/>
+  <text x="390" y="496" text-anchor="middle" class="box-label">Report Repository</text>
+  <text x="390" y="508" text-anchor="middle" class="box-tech">[supabase_client.py · INSERT via PostgREST]</text>
+  <text x="390" y="520" text-anchor="middle" class="box-desc">Persiste reporte con prioridad y zona</text>
+
+  <!-- Arrows: Router -> components -->
+  <line x1="400" y1="315" x2="160" y2="363" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="245" y="335" class="arrow-label">1. valida payload</text>
+
+  <line x1="450" y1="315" x2="390" y2="363" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="390" y="345" class="arrow-label">2. calcula prioridad</text>
+
+  <line x1="530" y1="315" x2="620" y2="363" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="600" y="335" class="arrow-label">3. resuelve zona</text>
+
+  <line x1="480" y1="315" x2="390" y2="473" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="415" y="440" class="arrow-label">4. guarda reporte</text>
+
+  <line x1="580" y1="315" x2="825" y2="363" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="740" y="335" class="arrow-label">5. publica evento</text>
+
+  <!-- External: Supabase -->
+  <rect x="200" y="600" width="280" height="55" rx="5" fill="#999"/>
+  <text x="340" y="621" text-anchor="middle" class="box-label">Supabase</text>
+  <text x="340" y="633" text-anchor="middle" class="box-tech">[PostgreSQL 15 + PostGIS + RLS]</text>
+  <text x="340" y="645" text-anchor="middle" class="box-desc">Base de datos relacional con soporte geoespacial</text>
+
+  <!-- External: EventBridge -->
+  <rect x="600" y="600" width="200" height="55" rx="5" fill="#d4a843"/>
+  <text x="700" y="621" text-anchor="middle" class="box-label">EventBridge</text>
+  <text x="700" y="633" text-anchor="middle" class="box-tech">[AWS EventBridge]</text>
+  <text x="700" y="645" text-anchor="middle" class="box-desc">Bus de eventos asincrono</text>
+
+  <!-- External: Secrets Manager -->
+  <rect x="60" y="600" width="120" height="55" rx="5" fill="#999"/>
+  <text x="120" y="621" text-anchor="middle" class="box-label">Secrets Mgr</text>
+  <text x="120" y="633" text-anchor="middle" class="box-tech">[AWS]</text>
+  <text x="120" y="645" text-anchor="middle" class="box-desc">Credenciales</text>
+
+  <!-- Arrows to externals -->
+  <line x1="390" y1="530" x2="340" y2="598" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="335" y="570" class="arrow-label">PostgREST / RPC (service_role)</text>
+
+  <line x1="620" y1="420" x2="400" y2="598" stroke="#666" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="475" y="520" class="arrow-label">zone_lookup(lat, lon)</text>
+
+  <line x1="825" y1="420" x2="730" y2="598" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="800" y="520" class="arrow-label">PutEvents</text>
+
+  <line x1="120" y1="598" x2="300" y2="530" stroke="#999" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arr)"/>
+  <text x="170" y="555" class="arrow-label">SUPABASE_URL + KEY</text>
+
+  <!-- Legend -->
+  <rect x="40" y="720" width="880" height="40" rx="5" fill="none" stroke="#ddd" stroke-width="1"/>
+  <rect x="60" y="732" width="14" height="14" rx="2" fill="#438dd5"/>
+  <text x="80" y="744" class="legend">Componente de entrada</text>
+  <rect x="220" y="732" width="14" height="14" rx="2" fill="#2a7ab5"/>
+  <text x="240" y="744" class="legend">Componente de dominio</text>
+  <rect x="400" y="732" width="14" height="14" rx="2" fill="#999"/>
+  <text x="420" y="744" class="legend">Sistema externo</text>
+  <rect x="540" y="732" width="14" height="14" rx="2" fill="#d4a843"/>
+  <text x="560" y="744" class="legend">Bus de eventos</text>
+  <line x1="660" y1="739" x2="700" y2="739" stroke="#666" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="710" y="744" class="legend">Sincrono</text>
+  <line x1="770" y1="739" x2="810" y2="739" stroke="#666" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="820" y="744" class="legend">Asincrono / config</text>
+</svg>
