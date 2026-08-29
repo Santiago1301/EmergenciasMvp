@@ -4,6 +4,8 @@ Sistema de gestion de emergencias post-sismo para cuatro zonas de Colombia (Quib
 
 **Video demo:** [https://youtu.be/6s8stPuHpzg](https://youtu.be/6s8stPuHpzg)
 
+**Informe tecnico:** [docs/informe-tecnico.pdf](docs/informe-tecnico.pdf)
+
 ---
 
 ## Patrones arquitectonicos aplicados
