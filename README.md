@@ -2,6 +2,8 @@
 
 Sistema de gestion de emergencias post-sismo para cuatro zonas de Colombia (Quibdo, Pereira, Cali, Manizales). Los ciudadanos reportan incidentes desde una PWA con soporte offline y los operadores despachan cuadrillas especializadas desde un dashboard con mapa interactivo y clustering geoespacial en tiempo real.
 
+**Video demo:** [https://youtu.be/6s8stPuHpzg](https://youtu.be/6s8stPuHpzg)
+
 ---
 
 ## Patrones arquitectonicos aplicados
